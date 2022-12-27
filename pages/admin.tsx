@@ -7,14 +7,13 @@ import { useCallback, useState } from "react";
 
 const Admin: NextPage = () => {
   const router = useRouter();
-  const { secret } = router.query;
 
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
   const handleRefreshManual = useCallback(async () => {
     setIsManualRefreshing(true);
     await fetch("/api/refreshManual", {
       method: "POST"
-    })
+    });
     setIsManualRefreshing(false);
   }, []);
 

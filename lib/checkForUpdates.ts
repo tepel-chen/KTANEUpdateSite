@@ -40,7 +40,7 @@ export default async function checkForUpdates() {
   const insertSQL = "INSERT IGNORE INTO ktane.module (moduleID, jaName, manualUrl, recordedAt) VALUES ?";
   const now = Date.now();
   const inserts = filtered.map(mod => {
-    const match = mod.Sheets?.map(sheet => sheet.match(reManual)).find(m => m)
+    const match = mod.Sheets?.map(sheet => sheet.match(reManual)).find(m => m);
     if(!match) return [mod.ModuleID, null, null, now];
     return [mod.ModuleID, match[1], mod.Name + match[0] + ".html", now];
   });
