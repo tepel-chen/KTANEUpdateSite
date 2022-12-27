@@ -19,6 +19,7 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
       - URL=https://ktane.regularofvanilla.com/
+      - TZ="Asia/Tokyo"
   db:
     build: 
       dockerfile: ./dockerfiles/mysql.Dockerfile
@@ -28,6 +29,7 @@ services:
       - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=ktane
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - TZ="Asia/Tokyo"
     networks:
       - base
     volumes:
