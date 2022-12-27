@@ -1,11 +1,17 @@
 version: '3'
+
+x-aws-vpc: ${AWS_VPC}
+
 networks:
   base:
+volumes:
+  db-store:
 services:
   nextjs:
-    image: 844535137017.dkr.ecr.ap-northeast-1.amazonaws.com/ktane/nextjs
-    ports: 
-      - "3000:3000"
+    image: ${NEXTJS_IMAGE}
+    ports:
+      - target: 3000
+        x-aws-protocol: http
     networks:
       - base
     environment:
@@ -13,14 +19,18 @@ services:
       - DATABASE=ktane
       - USERNAME=root
       - PASSWORD=pwd
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
       - URL=https://ktane.regularofvanilla.com/
   db:
-    image: 844535137017.dkr.ecr.ap-northeast-1.amazonaws.com/ktane/db
+    image: ${DB_IMAGE}
     ports:
-      - 3306:3306
+      - target: 3306
+        x-aws-protocol: http
     environment:
       - MYSQL_ROOT_PASSWORD=pwd
       - MYSQL_DATABASE=ktane
       - MYSQL_PASSWORD=pwd
     networks:
       - base
+    volumes:
+      - db-store:/var/lib/mysql

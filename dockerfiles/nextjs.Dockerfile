@@ -4,7 +4,6 @@ WORKDIR /usr/app
 COPY ./lib ./lib
 COPY ./pages ./pages
 COPY ./public ./public
-COPY ./styles ./styles
 COPY ./package*.json ./
 COPY ./tsconfig.json ./
 COPY ./*.config.js ./

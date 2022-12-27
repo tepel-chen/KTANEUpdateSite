@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 
 import getMysql from "@Lib/mysql";
 import { Button, ButtonGroup, Container, Link, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme } from "@mui/material";
-import { LoadingButton } from '@mui/lab';
+import { LoadingButton } from "@mui/lab";
 
 
 interface Change {
@@ -135,9 +135,9 @@ const ChangeLog: NextPage<Props> = ({changeLogs}) => {
                             fontSize: "10px",
                             marginRight: "4px"
                           }}>
-                            {(c.prevJaName.length === 0 ? "追加" : c.newJaName.length === 0 ? "削除" : "変更")}
+                            {(c.prevJaName.length === 0 ? "追加" : c.newJaName.length === 0 ? "削除" : "名前変更")}
                           </span>
-                          {c.newJaName}
+                          {c.newJaName}{c.newJaName.length > 0 &&  c.prevJaName.length > 0 ? "→" : ""}{c.prevJaName}
                           <span style={{color: theme.palette.text.secondary, fontSize: ".8em"}}>{c.moduleName}</span>
                         </div>
                       );})}
