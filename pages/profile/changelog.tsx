@@ -137,7 +137,7 @@ const ChangeLog: NextPage<Props> = ({changeLogs}) => {
                           }}>
                             {(c.prevJaName.length === 0 ? "追加" : c.newJaName.length === 0 ? "削除" : "名前変更")}
                           </span>
-                          {c.newJaName}{c.newJaName.length > 0 &&  c.prevJaName.length > 0 ? "→" : ""}{c.prevJaName}
+                          {c.prevJaName}{c.newJaName.length > 0 &&  c.prevJaName.length > 0 ? "→" : ""}{c.newJaName}
                           <span style={{color: theme.palette.text.secondary, fontSize: ".8em"}}>{c.moduleName}</span>
                         </div>
                       );})}

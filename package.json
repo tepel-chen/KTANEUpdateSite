@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "set NODE_ENV=development & next build",
     "start": "next start",
     "lint": "npx eslint --fix ./pages/** ./lib/** -c ./.eslintrc.json"
   },
