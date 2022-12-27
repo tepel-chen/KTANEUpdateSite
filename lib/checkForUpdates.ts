@@ -17,6 +17,7 @@ interface KtaneJSON {
 
 
 const JSON_URL = "https://ktane.timwi.de/json/raw";
+const reManual = new RegExp(/ translated \(日本語 — ([^)]+)\)( \([^)]+\))?(?=\|html\|)/);
 
 export default async function checkForUpdates() {
   const data = await fetch(JSON_URL);
@@ -36,11 +37,12 @@ export default async function checkForUpdates() {
     await mysql.commit();
   })();
   
-  const insertSQL = "INSERT IGNORE INTO ktane.module (moduleID, jaName, recordedAt) VALUES ?";
+  const insertSQL = "INSERT IGNORE INTO ktane.module (moduleID, jaName, manualUrl, recordedAt) VALUES ?";
   const now = Date.now();
   const inserts = filtered.map(mod => {
-    const match = mod.Sheets?.find(sheet => sheet.includes("日本語"))?.match(/\(日本語 — ([^)]+)\)/);
-    return [mod.ModuleID, match && match.length > 1 ? match[1] : "", now];
+    const match = mod.Sheets?.map(sheet => sheet.match(reManual)).find(m => m)
+    if(!match) return [mod.ModuleID, null, null, now];
+    return [mod.ModuleID, match[1], mod.Name + match[0] + ".html", now];
   });
   await mysql.beginTransaction();
   await mysql.query(insertSQL, [inserts]);

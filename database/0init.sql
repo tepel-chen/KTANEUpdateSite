@@ -1,10 +1,11 @@
 CREATE DATABASE IF NOT EXISTS ktane;
 
 CREATE TABLE IF NOT EXISTS ktane.module (
-   moduleID VARCHAR(255),
-   jaName VARCHAR(255),
-   recordedAt BIGINT,
-   PRIMARY KEY (moduleID, jaName)
+  moduleID VARCHAR(255),
+  jaName VARCHAR(255),
+  manualUrl VARCHAR(255),
+  recordedAt BIGINT,
+  PRIMARY KEY (moduleID, jaName)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE INDEX module_recordedAt_idx ON ktane.module (recordedAt DESC); 
 

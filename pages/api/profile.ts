@@ -1,7 +1,7 @@
 import checkForUpdates from "@Lib/checkForUpdates";
 import getMysql from "@Lib/mysql";
 import { lightFormat } from "date-fns";
-import { utcToZonedTime } from 'date-fns-tz'
+import { utcToZonedTime } from "date-fns-tz";
 import { RowDataPacket } from "mysql2";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -28,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           S.moduleID IN (SELECT moduleID FROM exceptionModule));
     `))[0]as RowDataPacket[]).map(v => v["moduleID"]);
 
-    res.setHeader("Content-Disposition", `attachment; filename="Ja Profile v2.${lightFormat(utcToZonedTime(new Date(), 'Asia/Tokyo'), "yyMMddHH")}.json"`);
+    res.setHeader("Content-Disposition", `attachment; filename="Ja Profile v2.${lightFormat(utcToZonedTime(new Date(), "Asia/Tokyo"), "yyMMddHH")}.json"`);
 
     res.status(200).json({
       DisabledList: diabledList,

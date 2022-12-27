@@ -10,7 +10,8 @@ import { LoadingButton } from "@mui/lab";
 interface Change {
   moduleName: string;
   prevJaName: string;
-  newJaName: string
+  newJaName: string;
+  manualUrl: string;
 }
 
 export interface Props {
@@ -25,17 +26,27 @@ export interface QueryResult {
   newJaName: string,
   recordedAt: number,
   moduleName: string,
-  displayName?: string
+  displayName?: string,
+  manualUrl: string,
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
   const mysql = await getMysql();
 
   const sql = `
-    SELECT A.prevJaName, A.newJaName, recordedAt, moduleName, displayName 
+    SELECT A.prevJaName, A.newJaName, A.recordedAt, moduleName, displayName, manualUrl
       FROM ktane.moduleUpdate AS A 
-      INNER JOIN ktane.moduleName as B 
-      WHERE A.moduleID = B.moduleID;`;
+      INNER JOIN ktane.moduleName as B
+      INNER JOIN (
+        SELECT CA.moduleID, manualUrl
+        FROM ktane.module AS CA
+        INNER JOIN (
+          SELECT moduleID, MAX(recordedAt) as maxRecordedAt
+          FROM ktane.module 
+          GROUP BY moduleID
+        ) as CB WHERE CA.recordedAt = maxRecordedAt AND CA.moduleID = CB.moduleID
+      ) as C
+      WHERE A.moduleID = B.moduleID AND A.moduleID = C.moduleID;`;
   const res = ((await mysql.query(sql))[0] as QueryResult[]); 
   const map = new Map<number, Change[]>();
   for(const r of res) {
@@ -47,7 +58,8 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
     arr.push({
       moduleName: r.displayName && r.displayName.length > 0 ? r.displayName : r.moduleName,
       prevJaName: r.prevJaName,
-      newJaName: r.newJaName
+      newJaName: r.newJaName,
+      manualUrl: r.manualUrl
     });
   }
 
@@ -137,7 +149,9 @@ const ChangeLog: NextPage<Props> = ({changeLogs}) => {
                           }}>
                             {(c.prevJaName.length === 0 ? "追加" : c.newJaName.length === 0 ? "削除" : "名前変更")}
                           </span>
-                          {c.prevJaName}{c.newJaName.length > 0 &&  c.prevJaName.length > 0 ? "→" : ""}{c.newJaName}
+                          <Link href={"https://ktane.timwi.de/HTML/" + c.manualUrl} target="_blank" rel="noopener noreferrer" >
+                            {c.prevJaName}{c.newJaName.length > 0 &&  c.prevJaName.length > 0 ? "→" : ""}{c.newJaName}
+                          </Link>
                           <span style={{color: theme.palette.text.secondary, fontSize: ".8em"}}>{c.moduleName}</span>
                         </div>
                       );})}
