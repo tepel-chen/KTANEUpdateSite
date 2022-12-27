@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "npx eslint --fix ./pages/**/*.tsx ./lib/**/*.ts"
+    "lint": "npx eslint --fix ./pages/** ./lib/** -c ./.eslintrc.json"
   },
   "dependencies": {
     "mysql": "^2.18.1",
