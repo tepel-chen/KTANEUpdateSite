@@ -1,6 +1,6 @@
 import checkForUpdates from "@Lib/checkForUpdates";
 import getMysql from "@Lib/mysql";
-import moment from "moment";
+import { lightFormat } from "date-fns";
 import { RowDataPacket } from "mysql2";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           S.moduleID IN (SELECT moduleID FROM exceptionModule));
     `))[0]as RowDataPacket[]).map(v => v["moduleID"]);
 
-    res.setHeader("Content-Disposition", `attachment; filename="Ja Profile v2.${moment().format("YYMMDD")}.json"`);
+    res.setHeader("Content-Disposition", `attachment; filename="Ja Profile v2.${lightFormat(new Date(), "yyMMddHH")}.json"`);
 
     res.status(200).json({
       DisabledList: diabledList,
