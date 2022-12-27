@@ -1,4 +1,5 @@
 import getMysql from "@Lib/mysql";
+import { QueryResult } from "pages/profile/changelog";
 
 
 interface KtaneModule {
@@ -28,7 +29,6 @@ export default async function checkForUpdates() {
 
   const moduleNameSQL = "INSERT IGNORE INTO ktane.moduleName (moduleID, moduleName, displayName) VALUES ?";
   const moduleNames = filtered.map(mod => [mod.ModuleID, mod.Name, mod.DisplayName]);
-  console.log(moduleNames);
   (async () => {
     await mysql.beginTransaction();
     await mysql.query("DELETE FROM ktane.moduleName;");
@@ -62,4 +62,52 @@ export default async function checkForUpdates() {
 
   await mysql.commit();
 
+  const sendUpdateSQL = `
+    SELECT A.prevJaName, A.newJaName, B.moduleName, B.displayName 
+      FROM ktane.moduleUpdate AS A 
+      INNER JOIN ktane.moduleName as B 
+      WHERE A.moduleID = B.moduleID AND A.recordedAt = ?;`;
+  
+  const res = ((await mysql.query(sendUpdateSQL, now))[0] as QueryResult[]).map(r => ({
+    moduleName: r.displayName && r.displayName.length > 0 ? r.displayName : r.moduleName,
+    prevJaName: r.prevJaName,
+    newJaName: r.newJaName
+  }));
+  const addStr = res.filter(r => r.prevJaName === "").map(r => `${r.newJaName}(${r.moduleName})`).join("、");
+  const changeStr = res.filter(r => r.prevJaName !== "").map(r => `${r.prevJaName}→${r.newJaName}(${r.moduleName})`).join("、");
+
+  if(addStr.length === 0 && changeStr.length === 0) return;
+  try {
+    await fetch(process.env.DISCORD_WEBHOOK_URL ?? "https://discord.com/api/webhooks/982851950326472754/0qdudR52IP0gBJkxXt5-kv58TD5X4qCnNgjAdWqxOOVmxSLXPYfyR_11GXS3unnWU7Ff",{
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        content: addStr.length > 0 ? "新しい翻訳マニュアルが投稿されました!" : "モジュールの和名が変更されました。",
+        embeds: [
+          {
+            title: "日本語対応モジュールプロファイル",
+            url: `${process.env.URL}/profile/changelog`,
+            fields: [
+              {
+                name: "追加",
+                value: addStr
+              },
+              {
+                name: "変更",
+                value: changeStr
+              },
+              {
+                name: "ご利用はこちらから",
+                value:`[ダウンロード](${process.env.URL}/api/profile)`
+              }
+            ].filter(a => a.value.length > 0)
+          },
+        ],
+      })
+    });
+  } catch (e) {
+    console.log(e);
+  }
 }

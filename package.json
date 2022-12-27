@@ -9,6 +9,7 @@
     "lint": "npx eslint --fix ./pages/** ./lib/** -c ./.eslintrc.json"
   },
   "dependencies": {
+    "moment": "^2.29.4",
     "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
     "next": "12.2.4",
