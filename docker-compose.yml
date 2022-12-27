@@ -1,35 +1,33 @@
 version: '3'
 
-x-aws-vpc: ${AWS_VPC}
-
 networks:
   base:
 volumes:
   db-store:
 services:
   nextjs:
-    image: ${NEXTJS_IMAGE}
+    build: 
+      dockerfile: ./dockerfiles/nextjs.Dockerfile
     ports:
-      - target: 3000
-        x-aws-protocol: http
+      - "3000:3000"
     networks:
       - base
     environment:
       - ENDPOINT=db
       - DATABASE=ktane
-      - USERNAME=root
-      - PASSWORD=pwd
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
       - URL=https://ktane.regularofvanilla.com/
   db:
-    image: ${DB_IMAGE}
+    build: 
+      dockerfile: ./dockerfiles/mysql.Dockerfile
     ports:
-      - target: 3306
-        x-aws-protocol: http
+      - "3306:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=pwd
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=ktane
-      - MYSQL_PASSWORD=pwd
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     networks:
       - base
     volumes:
