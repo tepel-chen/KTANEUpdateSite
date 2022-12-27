@@ -1,13 +1,13 @@
 FROM node:16.16.0
 
 WORKDIR /usr/app
-COPY ./lib ./lib
-COPY ./pages ./pages
-COPY ./public ./public
 COPY ./package*.json ./
+RUN npm i
 COPY ./tsconfig.json ./
 COPY ./*.config.js ./
-RUN npm i
+COPY ./public ./public
+COPY ./lib ./lib
+COPY ./pages ./pages
 RUN npm run build
 
 CMD [ "sh", "-c", "npm start"]
