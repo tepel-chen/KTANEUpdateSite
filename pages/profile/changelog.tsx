@@ -3,7 +3,8 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/router";
 
 import getMysql from "@Lib/mysql";
-import Link from "next/link";
+import { Button, ButtonGroup, Container, Link, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme } from "@mui/material";
+import { LoadingButton } from '@mui/lab';
 
 
 interface Change {
@@ -60,6 +61,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 const ChangeLog: NextPage<Props> = ({changeLogs}) => {
 
   const router = useRouter();
+  const theme = useTheme();
 
   const parsed = changeLogs.map(changeLog => ({
     ...changeLog,
@@ -82,28 +84,71 @@ const ChangeLog: NextPage<Props> = ({changeLogs}) => {
       });
   }, [setIsReloading, router]);
 
+  const handleDownload = useCallback(() => {
+    router.push("/api/profile");
+  }, [router]);
+
   return (
-    <div>
-      <Link href="/api/profile"><a><button>プロファイルをダウンロード</button></a></Link>
-      <button onClick={handleCheckUpdate} disabled={isReloading}>{isReloading ? "確認中" : "更新を確認"}</button><br />
-      変更ログ
-      <table>
-        <thead>
-          <tr>
-            <th>日時</th><th>変更</th>
-          </tr>
-        </thead>
-        <tbody>
-          {parsed.map(changeLog => (
-            <tr key={changeLog.recordedAt}>
-              <td>{new Date(changeLog.recordedAt).toLocaleString()}</td>
-              <td>{changeLog.str}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      過去のプロファイルと変更ログは<a href="https://tepel-chen.github.io/JaProfiles/">こちら</a>
-    </div>
+    <Container sx={{marginTop: "32px"}} maxWidth="lg">
+      <Typography variant="h4" component="h1" gutterBottom>
+        日本語対応モジュールプロファイル
+      </Typography>
+      <Typography paragraph>
+        プロファイルの詳しい使い方は<Link href="https://tepel-chen.github.io/Tutorials/profile">プロファイルについて</Link>を御覧ください。
+      </Typography>
+      <ButtonGroup variant="contained">
+        <Button onClick={handleDownload}>プロファイルをダウンロード</Button>
+        <LoadingButton variant="contained" onClick={handleCheckUpdate} loading={isReloading}>{isReloading ? "確認中" : "更新を確認"}</LoadingButton><br />
+      </ButtonGroup>
+      <Typography paragraph>
+        どちらのプロファイルも<strong>分析担当者用</strong>のプロファイルです。必要に応じて処理担当者用に変更してください。
+      </Typography>
+      <Typography paragraph>
+        過去のプロファイルと変更ログは<Link href="https://tepel-chen.github.io/JaProfiles/">こちら</Link>
+      </Typography>
+      <Typography variant="h5" component="h2" gutterBottom>
+        変更ログ
+      </Typography>
+      <TableContainer component={Paper}>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{textAlign: "center", fontWeight: "bold"}} component="th">日時</TableCell>
+              <TableCell sx={{fontWeight: "bold"}} component="th">変更</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {parsed.map(changeLog => (
+              <TableRow key={changeLog.recordedAt}>
+                <TableCell sx={{textAlign: "center"}}>{new Date(changeLog.recordedAt).toLocaleString()}</TableCell>
+                <TableCell>
+                  <div style={{display: "flex", flexWrap: "wrap"}}>
+                    {changeLog.changes.map(c => {
+                      const col = c.prevJaName.length === 0 ? theme.palette.primary : c.newJaName.length === 0 ? theme.palette.error : theme.palette.secondary;
+                      return (
+                        <div key={c.moduleName} style={{margin: "2px 8px"}}>
+                          <span style={{
+                            backgroundColor: col.main,
+                            color: col.contrastText,
+                            padding: "4px",
+                            borderRadius: "12px",
+                            fontSize: "10px",
+                            marginRight: "4px"
+                          }}>
+                            {(c.prevJaName.length === 0 ? "追加" : c.newJaName.length === 0 ? "削除" : "変更")}
+                          </span>
+                          {c.newJaName}
+                          <span style={{color: theme.palette.text.secondary, fontSize: ".8em"}}>{c.moduleName}</span>
+                        </div>
+                      );})}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
   );
 };
 
