@@ -1,8 +1,10 @@
 import { createTheme, CssBaseline, ThemeProvider, useMediaQuery } from "@mui/material";
 import type { AppProps } from "next/app";
+import { SessionProvider } from "next-auth/react";
+
 import { useMemo } from "react";
 
-function MyApp({ Component, pageProps }: AppProps) {
+function MyApp({ Component, pageProps: {session, ...pageProps} }: AppProps) {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
 
   const theme = useMemo(
@@ -15,11 +17,14 @@ function MyApp({ Component, pageProps }: AppProps) {
     [prefersDarkMode],
   );
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Component {...pageProps} />
+    <SessionProvider session={session}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Component {...pageProps} />
 
-    </ThemeProvider>
+      </ThemeProvider>
+
+    </SessionProvider>
   );
 }
 
