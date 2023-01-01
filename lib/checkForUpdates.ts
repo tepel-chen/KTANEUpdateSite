@@ -15,6 +15,14 @@ interface KtaneJSON {
   KtaneModules: KtaneModule[]
 }
 
+interface ParsedModInfo {
+  moduleID: string;
+  moduleName: string;
+  displayName?: string;
+  jaName?: string;
+  manualUrl?: string;
+}
+
 
 const JSON_URL = "https://ktane.timwi.de/json/raw";
 const reManual = new RegExp(/ translated \(日本語 — ([^)]+)\)( \([^)]+\))?(?=\|html\|)/);
@@ -27,9 +35,23 @@ export default async function checkForUpdates() {
 
   const mysql = await getMysql();
 
+  const parsedModInfo: ParsedModInfo[] = filtered.map(mod => {
+    const match = mod.Sheets?.map(sheet => sheet.match(reManual)).find(m => m);
+    return {
+      moduleID: mod.ModuleID,
+      moduleName: mod.Name,
+      displayName: mod.DisplayName,
+      jaName: match ? match[1] : undefined,
+      manualUrl: match ? mod.Name + match[0] + ".html" : undefined
+    };
 
-  const moduleNameSQL = "INSERT IGNORE INTO ktane.moduleName (moduleID, moduleName, displayName) VALUES ?";
-  const moduleNames = filtered.map(mod => [mod.ModuleID, mod.Name, mod.DisplayName]);
+  });
+
+
+  const moduleNameSQL = "INSERT INTO ktane.moduleName (moduleID, moduleName, displayName, jaName, manualUrl) VALUES ?";
+  const moduleNames = parsedModInfo.map(mod => {
+    return [mod.moduleID, mod.moduleName, mod.displayName, mod.jaName, mod.manualUrl]; 
+  });
   (async () => {
     await mysql.beginTransaction();
     await mysql.query("DELETE FROM ktane.moduleName;");
@@ -39,11 +61,7 @@ export default async function checkForUpdates() {
   
   const insertSQL = "INSERT IGNORE INTO ktane.module (moduleID, jaName, manualUrl, recordedAt) VALUES ?";
   const now = Date.now();
-  const inserts = filtered.map(mod => {
-    const match = mod.Sheets?.map(sheet => sheet.match(reManual)).find(m => m);
-    if(!match) return [mod.ModuleID, null, null, now];
-    return [mod.ModuleID, match[1], mod.Name + match[0] + ".html", now];
-  });
+  const inserts = parsedModInfo.map(mod => [mod.moduleID, mod.jaName, mod.manualUrl, now]);
   await mysql.beginTransaction();
   await mysql.query(insertSQL, [inserts]);
 
@@ -80,7 +98,7 @@ export default async function checkForUpdates() {
 
   if(addStr.length === 0 && changeStr.length === 0) return;
   try {
-    await fetch(process.env.DISCORD_WEBHOOK_URL ?? "https://discord.com/api/webhooks/982851950326472754/0qdudR52IP0gBJkxXt5-kv58TD5X4qCnNgjAdWqxOOVmxSLXPYfyR_11GXS3unnWU7Ff",{
+    await fetch(process.env.DISCORD_WEBHOOK_URL ?? "",{
       method: "POST",
       headers: {
         "Content-Type": "application/json"

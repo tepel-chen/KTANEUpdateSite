@@ -1,0 +1,18 @@
+import { NextApiRequest, NextApiResponse } from "next";
+import { addToBeTranslated } from "@Lib/translation/add";
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if(req.method !== "POST") {
+    res.status(405).json({ error: `Method ${req.method} not allowed.` });
+    return;
+  }
+
+  try {
+    const data = JSON.parse(req.body);
+    await addToBeTranslated(data);
+    res.status(200).json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e });
+  }
+  
+}

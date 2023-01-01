@@ -1,4 +1,4 @@
-import { createTheme, CssBaseline, ThemeProvider, useMediaQuery } from "@mui/material";
+import { Container, createTheme, CssBaseline, ThemeProvider, useMediaQuery } from "@mui/material";
 import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
 
@@ -20,7 +20,10 @@ function MyApp({ Component, pageProps: {session, ...pageProps} }: AppProps) {
     <SessionProvider session={session}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Component {...pageProps} />
+
+        <Container sx={{marginTop: "32px"}} maxWidth="lg">
+          <Component {...pageProps} />
+        </Container>
 
       </ThemeProvider>
 

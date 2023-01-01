@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/router";
 
 import getMysql from "@Lib/mysql";
-import { Button, ButtonGroup, Container, Link, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme } from "@mui/material";
+import { Button, ButtonGroup, Link, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 
 
@@ -34,19 +34,21 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
   const mysql = await getMysql();
 
   const sql = `
-    SELECT A.prevJaName, A.newJaName, A.recordedAt, moduleName, displayName, manualUrl
-      FROM ktane.moduleUpdate AS A 
-      INNER JOIN ktane.moduleName as B
+SELECT A.prevJaName, A.newJaName, A.recordedAt, moduleName, displayName, manualUrl
+  FROM ktane.moduleUpdate AS A
+  INNER JOIN ktane.moduleName AS B
+  INNER JOIN (
+    SELECT CA.moduleID
+      FROM ktane.module AS CA
       INNER JOIN (
-        SELECT CA.moduleID, manualUrl
-        FROM ktane.module AS CA
-        INNER JOIN (
-          SELECT moduleID, MAX(recordedAt) as maxRecordedAt
+        SELECT moduleID, MAX(recordedAt) as maxRecordedAt
           FROM ktane.module 
           GROUP BY moduleID
-        ) as CB WHERE CA.recordedAt = maxRecordedAt AND CA.moduleID = CB.moduleID
-      ) as C
-      WHERE A.moduleID = B.moduleID AND A.moduleID = C.moduleID;`;
+      ) AS CB
+      WHERE CA.recordedAt = maxRecordedAt AND CA.moduleID = CB.moduleID
+  ) AS C
+  WHERE A.moduleID = B.moduleID AND A.moduleID = C.moduleID;
+      `;
   const res = ((await mysql.query(sql))[0] as QueryResult[]); 
   const map = new Map<number, Change[]>();
   for(const r of res) {
@@ -101,7 +103,7 @@ const ChangeLog: NextPage<Props> = ({changeLogs}) => {
   }, [router]);
 
   return (
-    <Container sx={{marginTop: "32px"}} maxWidth="lg">
+    <>
       <Typography variant="h4" component="h1" gutterBottom>
         日本語対応モジュールプロファイル
       </Typography>
@@ -162,7 +164,7 @@ const ChangeLog: NextPage<Props> = ({changeLogs}) => {
           </TableBody>
         </Table>
       </TableContainer>
-    </Container>
+    </>
   );
 };
 
