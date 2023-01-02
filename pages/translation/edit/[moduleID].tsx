@@ -1,6 +1,6 @@
 import getMysql from "@Lib/mysql";
 import { LoadingButton } from "@mui/lab";
-import { Box, Checkbox, FormControlLabel, FormGroup, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
+import { Box, Checkbox, FormControlLabel, FormGroup, MenuItem, Select, SelectChangeEvent, Stack, TextField } from "@mui/material";
 import { Appbar } from "components/Appbar";
 import type { GetServerSideProps, NextPage } from "next";
 import { getSession, signIn, signOut, useSession } from "next-auth/react";
@@ -35,7 +35,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       translationStatus: m.translationStatus ?? (m.jaName ? "Uploaded" : null)
     }));
   const tbt = modules.find(mod => mod.moduleID === context.query.moduleID);
-  if(!tbt || tbt.userID !== session?.user?.id) return {
+  if(!tbt || (tbt.userID !== session?.user?.id && !!tbt.userID)) return {
     redirect: {
       destination: "/translation/list",
       permanent: false,
@@ -60,6 +60,7 @@ const EditTranslation: NextPage<Props> = ({ modules, tbt }) => {
   const [remarks, setRemarks] = useState(tbt.remarks);
   const [translationStatus, setTranslationStatus] = useState<string | undefined>(tbt.translationStatus ?? undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
 
   useEffect(() => {
@@ -97,6 +98,16 @@ const EditTranslation: NextPage<Props> = ({ modules, tbt }) => {
     });
     router.push("/translation/list");
   }, [setIsSubmitting, assignCheck, session?.user?.id, translatedStr, remarks, router, moduleID, translationStatus]);
+  const handleDelete = useCallback(async () => {
+    setIsDeleting(true);
+    await fetch(`/api/translation/delete`, {
+      method: "POST",
+      body: JSON.stringify({
+        id: moduleID
+      })
+    });
+    router.push("/translation/list");
+  }, [setIsDeleting,, router, moduleID]);
 
 
   const translationError = useMemo(() => {
@@ -132,9 +143,11 @@ const EditTranslation: NextPage<Props> = ({ modules, tbt }) => {
           <MenuItem value="Translated">翻訳済み</MenuItem>
           <MenuItem value="Submitted">提出済み</MenuItem>
         </Select>
-        <Box sx={{ mt: 1 }}>
+        <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
           <LoadingButton variant="contained" disabled={!canBeSubmitted} loading={isSubmitting} onClick={handleSubmit}>更新</LoadingButton>
-        </Box>
+          <LoadingButton variant="contained" color="error" loading={isSubmitting} onClick={handleDelete}>削除</LoadingButton>
+          
+        </Stack>
       </Box>
     </div>
   );

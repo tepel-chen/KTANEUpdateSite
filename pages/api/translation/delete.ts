@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { editToBeTranslated } from "@Lib/translation/edit";
+import { deleteToBeTranslated } from "@Lib/translation/delete";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if(req.method !== "POST") {
@@ -8,8 +8,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const data = JSON.parse(req.body);
-    await editToBeTranslated(data);
+    const { id } = JSON.parse(req.body);
+    await deleteToBeTranslated(id);
     res.status(200).json({ success: true });
   } catch (e) {
     res.status(500).json({ error: e });

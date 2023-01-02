@@ -13,12 +13,17 @@ interface Props {
 
 export const Appbar: React.FC<Props> = ({ session, onLogin, onLogout }) => {
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box sx={{ flexGrow: 1, mb: 1 }}>
       <MuiAppBar position="static">
         <Toolbar>
-          <Box sx={{ flexGrow: 1 }}>
+          <Box sx={{ flexGrow: 0 }}>
             <Link href="/profile/changelog">
               <Button>プロファイル</Button>
+            </Link>
+          </Box>
+          <Box sx={{ flexGrow: 1 }}>
+            <Link href="/translation/list">
+              <Button>モジュール翻訳予定</Button>
             </Link>
           </Box>
           <Box sx={{ flexGrow: 0 }}>
